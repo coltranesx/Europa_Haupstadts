@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Europäische Hauptstädte Quiz</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #121212;
+            color: #e0e0e0;
+            text-align: center;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 600px;
+            width: 100%;
+            background-color: #1e1e1e;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        
+        h1 {
+            color: #4CAF50;
+            margin-bottom: 30px;
+        }
+        
+        .game-header {
+            display: flex;
+            justify-content: space-between;
+            background-color: #333;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        
+        .game-header div {
+            display: flex;
+            align-items: center;
+        }
+        
+        .game-header span {
+            margin-left: 8px;
+            color: #FF9800;
+        }
+        
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 10px 5px;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: #45a049;
+        }
+        
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        
+        .option-btn {
+            width: 100%;
+            padding: 15px;
+            margin: 5px 0;
+            font-size: 18px;
+            text-align: left;
+        }
+        
+        .timer {
+            color: #FF9800;
+        }
+        
+        .score {
+            color: #4CAF50;
+        }
+        
+        .question {
+            font-size: 22px;
+            margin: 20px 0;
+            font-weight: bold;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .feedback {
+            font-size: 18px;
+            margin: 10px 0;
+            height: 24px;
+        }
+        
+        .correct {
+            color: #4CAF50;
+        }
+        
+        .incorrect {
+            color: #f44336;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        #progress {
+            margin-top: 20px;
+            font-size: 16px;
+            color: #9E9E9E;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="start-screen">
+            <h1>Europäische Hauptstädte Quiz</h1>
+            <p>Testen Sie Ihr Wissen über die Hauptstädte Europas!</p>
+            <button id="start-btn">Spiel starten</button>
+        </div>
+        
+        <div id="game-screen" class="hidden">
+            <div class="game-header">
+                <div class="score">Punkte: <span id="score">0</span></div>
+                <div class="timer">Zeit: <span id="time">20</span>s</div>
+            </div>
+            <div class="question" id="question"></div>
+            <div id="options-container"></div>
+            <div class="feedback" id="feedback"></div>
+            <div id="progress">Frage <span id="current-question">1</span> von 20</div>
+        </div>
+        
+        <div id="end-screen" class="hidden">
+            <h1>Spiel beendet!</h1>
+            <div class="score" style="font-size: 24px; margin: 30px 0;">Ihre Endpunktzahl: <span id="final-score">0</span></div>
+            <button id="restart-btn">Nochmal spielen</button>
+        </div>
+    </div>
+
+    <script>
+        // Länder und Hauptstädte
+        const countries = [
+            { country: "Deutschland", capital: "Berlin" },
+            { country: "Frankreich", capital: "Paris" },
+            { country: "Italien", capital: "Rom" },
+            { country: "Spanien", capital: "Madrid" },
+            { country: "Portugal", capital: "Lissabon" },
+            { country: "Belgien", capital: "Brüssel" },
+            { country: "Niederlande", capital: "Amsterdam" },
+            { country: "Luxemburg", capital: "Luxemburg" },
+            { country: "Österreich", capital: "Wien" },
+            { country: "Schweiz", capital: "Bern" },
+            { country: "Polen", capital: "Warschau" },
+            { country: "Tschechien", capital: "Prag" },
+            { country: "Slowakei", capital: "Bratislava" },
+            { country: "Ungarn", capital: "Budapest" },
+            { country: "Rumänien", capital: "Bukarest" },
+            { country: "Bulgarien", capital: "Sofia" },
+            { country: "Griechenland", capital: "Athen" },
+            { country: "Schweden", capital: "Stockholm" },
+            { country: "Norwegen", capital: "Oslo" },
+            { country: "Finnland", capital: "Helsinki" },
+            { country: "Dänemark", capital: "Kopenhagen" },
+            { country: "Irland", capital: "Dublin" },
+            { country: "Vereinigtes Königreich", capital: "London" },
+            { country: "Island", capital: "Reykjavik" },
+            { country: "Estland", capital: "Tallinn" },
+            { country: "Lettland", capital: "Riga" },
+            { country: "Litauen", capital: "Vilnius" },
+            { country: "Slowenien", capital: "Ljubljana" },
+            { country: "Kroatien", capital: "Zagreb" },
+            { country: "Serbien", capital: "Belgrad" },
+            { country: "Nordmazedonien", capital: "Skopje" },
+            { country: "Albanien", capital: "Tirana" },
+            { country: "Montenegro", capital: "Podgorica" },
+            { country: "Bosnien und Herzegowina", capital: "Sarajevo" },
+            { country: "Malta", capital: "Valletta" },
+            { country: "Zypern", capital: "Nikosia" },
+            { country: "Ukraine", capital: "Kiew" },
+            { country: "Weißrussland", capital: "Minsk" },
+            { country: "Moldawien", capital: "Chișinău" },
+            { country: "Russland", capital: "Moskau" }
+        ];
+
+        // Spielvariablen
+        let currentQuestion = 0;
+        let score = 0;
+        let timer;
+        let timeLeft = 20;
+        let selectedQuestions = [];
+        let correctAnswer;
+
+        // DOM-Elemente
+        const startScreen = document.getElementById('start-screen');
+        const gameScreen = document.getElementById('game-screen');
+        const endScreen = document.getElementById('end-screen');
+        const startBtn = document.getElementById('start-btn');
+        const restartBtn = document.getElementById('restart-btn');
+        const questionElement = document.getElementById('question');
+        const optionsContainer = document.getElementById('options-container');
+        const scoreElement = document.getElementById('score');
+        const timeElement = document.getElementById('time');
+        const feedbackElement = document.getElementById('feedback');
+        const currentQuestionElement = document.getElementById('current-question');
+        const finalScoreElement = document.getElementById('final-score');
+
+        // Startet das Spiel
+        startBtn.addEventListener('click', startGame);
+        restartBtn.addEventListener('click', startGame);
+
+        function startGame() {
+            currentQuestion = 0;
+            score = 0;
+            scoreElement.textContent = score;
+            
+            // Zufällige 20 Fragen auswählen
+            selectedQuestions = [...countries].sort(() => 0.5 - Math.random()).slice(0, 20);
+            
+            startScreen.classList.add('hidden');
+            endScreen.classList.add('hidden');
+            gameScreen.classList.remove('hidden');
+            
+            showQuestion();
+        }
+
+        function showQuestion() {
+            if (currentQuestion >= selectedQuestions.length) {
+                endGame();
+                return;
+            }
+            
+            // Timer zurücksetzen
+            clearInterval(timer);
+            timeLeft = 20;
+            timeElement.textContent = timeLeft;
+            
+            // Timer starten
+            timer = setInterval(() => {
+                timeLeft--;
+                timeElement.textContent = timeLeft;
+                
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    timeUp();
+                }
+            }, 1000);
+            
+            // Aktuelle Frage anzeigen
+            const question = selectedQuestions[currentQuestion];
+            questionElement.textContent = `Was ist die Hauptstadt von ${question.country}?`;
+            currentQuestionElement.textContent = currentQuestion + 1;
+            
+            // Antwortoptionen erstellen
+            optionsContainer.innerHTML = '';
+            feedbackElement.textContent = '';
+            feedbackElement.className = 'feedback';
+            
+            // Korrekte Antwort speichern
+            correctAnswer = question.capital;
+            
+            // 3 zufällige falsche Antworten auswählen
+            const wrongAnswers = countries
+                .filter(c => c.capital !== correctAnswer)
+                .map(c => c.capital)
+                .sort(() => 0.5 - Math.random())
+                .slice(0, 3);
+            
+            // Alle Antwortoptionen mischen
+            const allOptions = [...wrongAnswers, correctAnswer].sort(() => 0.5 - Math.random());
+            
+            // Buttons für jede Option erstellen
+            allOptions.forEach(option => {
+                const button = document.createElement('button');
+                button.className = 'option-btn';
+                button.textContent = option;
+                button.addEventListener('click', () => checkAnswer(option));
+                optionsContainer.appendChild(button);
+            });
+        }
+
+        function checkAnswer(selectedOption) {
+            clearInterval(timer);
+            
+            // Alle Buttons deaktivieren
+            const buttons = document.querySelectorAll('.option-btn');
+            buttons.forEach(button => {
+                button.disabled = true;
+                if (button.textContent === correctAnswer) {
+                    button.style.backgroundColor = '#4CAF50';
+                } else if (button.textContent === selectedOption && selectedOption !== correctAnswer) {
+                    button.style.backgroundColor = '#f44336';
+                }
+            });
+            
+            // Feedback geben
+            if (selectedOption === correctAnswer) {
+                score += 10;
+                feedbackElement.textContent = "Richtig! +10 Punkte";
+                feedbackElement.className = 'feedback correct';
+            } else {
+                score -= 2;
+                feedbackElement.textContent = `Falsch! Die richtige Antwort ist ${correctAnswer}. -2 Punkte`;
+                feedbackElement.className = 'feedback incorrect';
+            }
+            
+            scoreElement.textContent = score;
+            
+            // Nach einer kurzen Pause zur nächsten Frage gehen
+            setTimeout(() => {
+                currentQuestion++;
+                showQuestion();
+            }, 2000);
+        }
+
+        function timeUp() {
+            // Alle Buttons deaktivieren
+            const buttons = document.querySelectorAll('.option-btn');
+            buttons.forEach(button => {
+                button.disabled = true;
+                if (button.textContent === correctAnswer) {
+                    button.style.backgroundColor = '#4CAF50';
+                }
+            });
+            
+            feedbackElement.textContent = `Zeit abgelaufen! Die richtige Antwort ist ${correctAnswer}.`;
+            feedbackElement.className = 'feedback';
+            
+            // Nach einer kurzen Pause zur nächsten Frage gehen
+            setTimeout(() => {
+                currentQuestion++;
+                showQuestion();
+            }, 2000);
+        }
+
+        function endGame() {
+            gameScreen.classList.add('hidden');
+            endScreen.classList.remove('hidden');
+            finalScoreElement.textContent = score;
+        }
+    </script>
+</body>
+</html>
